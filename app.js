@@ -14,11 +14,12 @@ GAME RULES:
     playerScores - array to hold total scores of each player.
     roundScore - variable to hold score of current round.
     activePlayer - variable to indicate which player's round it is.
-    diceValue - variable to used to store the value of the dice roll.
-    gameActive - state variable to indicate whether the game is active or not
+    diceValue - variable used to store the value of first die's roll.
+    diceValue2 - variable used to store the value of the second die's roll.
+    gameActive - state variable to indicate whether the game is active or not.
 */
 
-var playerScores, roundScore, activePlayer, diceValue, gameActive, winState;
+var playerScores, roundScore, activePlayer, diceValue, diceValue2, gameActive, winState;
 
 
 // Function to initialize the game, whenever the game is loaded for the first time,
@@ -74,18 +75,28 @@ document.querySelector('.btn-roll').addEventListener('click', function () {
     if (gameActive) {
 
         // Show the dice each time the player clicks roll.
-        document.querySelector('.dice').style.display = 'block';
+        document.getElementById('dice-1').style.display = 'block';
+        document.getElementById('dice-2').style.display = 'block';
+
         // Generate the random number.
         diceValue = Math.ceil(Math.random() * 6);
+        diceValue2 = Math.ceil(Math.random() * 6);
 
         // Display the result
-        var diceDOM = document.querySelector('.dice');
-        diceDOM.src = 'dice-' + diceValue + '.png';
+        document.getElementById('dice-1').src = 'dice-' + diceValue + '.png';
+        document.getElementById('dice-2').src = 'dice-' + diceValue2 + '.png';
+
+        // If both the dice roll to 6, then reset the current player's score.
+        if (diceValue === 6 && diceValue2 === 6) {
+            playerScores[activePlayer] = 0;
+            document.querySelector('#score-' + activePlayer).textContent = '0';
+            togglePlayer();
+        }
 
         // Update the round score if the rolled number is not a 1.
-        if (diceValue !== 1) {
+        else if (diceValue !== 1 && diceValue2 !== 1) {
             // Add to the round score
-            roundScore += diceValue;
+            roundScore += diceValue + diceValue2;
             document.querySelector('#current-' + activePlayer).textContent = roundScore;
         }
         else {
@@ -110,12 +121,23 @@ document.querySelector('.btn-hold').addEventListener('click', function () {
         document.querySelector('#score-' + activePlayer).textContent = playerScores[activePlayer];
 
         // Check if the active player has won the game.
-        if (playerScores[activePlayer] >= 100) {
+
+        // inputScore is used to obtain the custom Final Score entered by the user.
+        var inputScore = document.querySelector('.final-score').value;
+
+        // If the player does not enter any custom Final Score, then the value inside that field will be Undefined.
+        // Undefined, 0, null or "" are type-coerced to false. Anything else is coreced to true.
+        // So if the player does not enter any custom Final Score, make the Final Score = 100.
+
+        if (!inputScore)
+            inputScore = 100;
+
+        if (playerScores[activePlayer] >= inputScore) {
 
             // Display the winning message
             document.querySelector('#name-' + activePlayer).textContent = 'Winner!';
             // Hide the dice
-            document.querySelector('.dice').style.display = 'none';
+            hideDice();
             // Add the winner panel (custom css defined in the css file)
             document.querySelector('.player-' + activePlayer + '-panel').classList.add('winner');
             // Remove the active class (current player)
@@ -167,8 +189,7 @@ function togglePlayer() {
     document.querySelector('.player-1-panel').classList.toggle('active');
 
     // We also need to hide the dice, each time the dice rolls 1.
-
-    document.querySelector('.dice').style.display = 'none';
+    hideDice();
 }
 
 
@@ -190,10 +211,11 @@ function init() {
     winState = false;
 
     // Hide the dice
-    document.querySelector('.dice').style.display = 'none';
+    hideDice();
+
 
     /*
-    Change the values from the HTML page using getElementById method.
+    Change the values in the HTML page using getElementById method.
     Everytime the New Game button is clicked or if the page is refreshed, 
     the starting values will be 0.
     */
@@ -223,4 +245,10 @@ function init() {
 
     // Add active class to Player-0
     document.querySelector('.player-0-panel').classList.add('active');
+}
+
+// Function used to hide the dice.
+function hideDice() {
+    document.getElementById('dice-1').style.display = 'none';
+    document.getElementById('dice-2').style.display = 'none';
 }
